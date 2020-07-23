@@ -12,7 +12,7 @@ end
 # Perform one asynchronous update on randomly selected neuron
 function update!(net::ContinuousHopfieldNet)
     i = rand(1:length(net.s))
-    net.s[i] = tanh(dot(net.W[:, i], net.s))
+    net.s[i] = tanh(net.W[:, i]' * net.s)
     return
 end
 

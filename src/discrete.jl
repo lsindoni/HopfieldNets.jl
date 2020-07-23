@@ -12,7 +12,7 @@ end
 # Perform one asynchronous update on randomly selected neuron
 function update!(net::DiscreteHopfieldNet)
     i = rand(1:length(net.s))
-    net.s[i] = dot(net.W[:, i], net.s) > 0 ? +1 : -1
+    net.s[i] = net.W[:, i]' * net.s > 0 ? +1 : -1
     return
 end
 
