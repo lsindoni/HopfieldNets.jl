@@ -1,7 +1,5 @@
-using HopfieldNets
-using Base.Test
-
-include(Pkg.dir("HopfieldNets", "demo", "letters.jl"))
+fname = joinpath(dirname(pathof(HopfieldNets)), "..", "demo", "letters.jl")
+include(fname)
 
 patterns = hcat(X, O)
 
