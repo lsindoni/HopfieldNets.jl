@@ -3,7 +3,7 @@ module HopfieldNets
     export update!, energy, settle!, train!, associate!, storkeytrain!
 
     import Printf: @printf
-    import LinearAlgebra: norm
+    import LinearAlgebra: norm, diag, Diagonal
 
     include("generic.jl")
     include("discrete.jl")

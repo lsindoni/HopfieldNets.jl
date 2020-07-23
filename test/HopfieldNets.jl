@@ -6,29 +6,30 @@ patterns = hcat(X, O)
 n = size(patterns, 1)
 
 dnet = DiscreteHopfieldNet(n)
-cnet = ContinuousHopfieldNet(n)
+# The gain for the continuous network corresponds to an inverse temperature
+# The smaller it is, the larger the thermal fluctuations, the more difficult
+# is to distinguish minima.
+cnet = ContinuousHopfieldNet(n, 10.0)
 
-for net in [dnet, cnet]
-    train!(net, patterns)
+for (tset, net) in zip(["discrete", "continuous"], [dnet, cnet])
+    @testset "$tset" begin
+        train!(net, patterns)
 
-    e0 = energy(net)
-    settle!(net, 1_000, false)
-    eFinal = energy(net)
-    @assert e0 != eFinal
+        e0 = energy(net)
+        settle!(net, 1_000, false)
+        eFinal = energy(net)
+        @assert e0 != eFinal
 
-    Xcorrupt = copy(X)
-    for i = 2:7
-         Xcorrupt[i] = 1
+        for (letter, data) in zip(["X", "O"], [X, O])
+            @testset "$letter" begin
+                data_corrupt = copy(data)
+                for i = 2:7
+                    data_corrupt[i] *= -1
+                end
+                data_restored = associate!(net, data_corrupt)
+                @test norm(data_corrupt - data_restored) > 1e-4
+                @test norm(data - data_restored) < 1e-4
+            end
+        end
     end
-    Xrestored = associate!(net, Xcorrupt)
-    @test norm(Xcorrupt - Xrestored) > 1e-4
-    @test norm(X - Xrestored) < 1e-4
-
-    Ocorrupt = copy(O)
-    for i = 2:7
-         Ocorrupt[i] = -1
-    end
-    Orestored = associate!(net, Ocorrupt)
-    @test norm(Ocorrupt - Orestored) > 1e-4
-    @test norm(O - Orestored) < 1e-4
 end

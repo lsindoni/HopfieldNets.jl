@@ -1,19 +1,10 @@
 abstract type HopfieldNet end
 
 function energy(net::HopfieldNet)
-    e = 0.0
-    n = length(net.s)
-    for i in 1:n
-        for j in 1:n
-            e += net.W[i, j] * net.s[i] * net.s[j]
-        end
-    end
-    e *= -0.5
-    for i in 1:n
-        e += net.W[i] * net.s[i]
-    end
-    return e
+    # Comment: No bias included
+    return -0.5 * (net.s' * net.W * net.s) #+ (net.W[:, 1]' * net.s)
 end
+
 
 function settle!(net::HopfieldNet,
                  iterations::Integer = 1_000,
@@ -39,50 +30,41 @@ end
 
 # Hebbian learning steps w/ columns as patterns
 function train!(net::HopfieldNet, patterns::Matrix{<:Real})
-    n = length(net.s)
+    n = size(patterns, 1)
     p = size(patterns, 2)
-    # Could use outer products here
-    # (1 / p) * (patterns[:, mu] * patterns[:, mu]')
-    for i in 1:n
-        for j in (i + 1):n
-            s = 0.0
-            for mu in 1:p
-                s += patterns[i, mu] * patterns[j, mu]
-            end
-            s = s / p # May need to be careful here
-            net.W[i, j] += s
-            net.W[j, i] += s
-        end
+    for idx in 1:p
+        δW = (patterns[:, idx] * patterns[:, idx]')
+        # self-connections are switched off
+        δW -= Diagonal(diag(δW))
+        net.W += δW ./ n
     end
     return
 end
 
-function h(i::Integer, j::Integer, mu::Integer, n::Integer,
-                      W::Matrix{Float64}, patterns::Matrix{<:Real})
-    res = 0.0
-    for k in 1:n
-        if k != i && k != j
-            res += W[i, k] * patterns[k, mu]
-        end
-    end
+
+function h(i::Integer, j::Integer, mu::Integer, W::Matrix{Float64}, patterns::Matrix{<:Real})
+    idxs = setdiff(1:size(W, 1), [i, j])
+    res = W[i, idxs]' * patterns[idxs, mu]
     return res
 end
+
 
 # Storkey learning steps w/ columns as patterns
 function storkeytrain!(net::HopfieldNet, patterns::Matrix{<:Real})
     n = length(net.s)
     p = size(patterns, 2)
-    for i in 1:n
-        for j in (i + 1):n
-            for mu in 1:p
+    for mu in 1:p
+        δW = zeros(size(net.W))
+        for i in 1:n
+            for j in (i + 1):n
                 s = patterns[i, mu] * patterns[j, mu]
-                s -= patterns[i, mu] * h(j, i, mu, n, net.W, patterns)
-                s -= h(i, j, mu, n, net.W, patterns) * patterns[j, mu]
-                s *= 1 / n
-                net.W[i, j] += s
-                net.W[j, i] += s
+                s -= patterns[i, mu] * h(j, i, mu, net.W, patterns)
+                s -= h(i, j, mu, net.W, patterns) * patterns[j, mu]
+                δW[i, j] += s
+                δW[j, i] += s
             end
         end
+        net.W += δW ./ n
     end
     return
 end
