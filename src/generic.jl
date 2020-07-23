@@ -1,4 +1,4 @@
-abstract HopfieldNet
+abstract type HopfieldNet end
 
 function energy(net::HopfieldNet)
     e = 0.0
