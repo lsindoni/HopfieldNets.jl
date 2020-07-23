@@ -1,4 +1,4 @@
-type DiscreteHopfieldNet <: HopfieldNet
+mutable struct DiscreteHopfieldNet <: HopfieldNet
     s::Vector{Float64} # State -- could have used Int's
     W::Matrix{Float64} # Weights
 end
