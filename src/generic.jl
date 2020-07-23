@@ -27,8 +27,8 @@ function settle!(net::HopfieldNet,
     return
 end
 
-function associate!{T <: Real}(net::HopfieldNet,
-                               pattern::Vector{T};
+function associate!(net::HopfieldNet,
+                               pattern::Vector{<:Real};
                                iterations::Integer = 1_000,
                                trace::Bool = false)
     copy!(net.s, pattern)
@@ -38,7 +38,7 @@ function associate!{T <: Real}(net::HopfieldNet,
 end
 
 # Hebbian learning steps w/ columns as patterns
-function train!{T <: Real}(net::HopfieldNet, patterns::Matrix{T})
+function train!(net::HopfieldNet, patterns::Matrix{<:Real})
     n = length(net.s)
     p = size(patterns, 2)
     # Could use outer products here
@@ -57,8 +57,8 @@ function train!{T <: Real}(net::HopfieldNet, patterns::Matrix{T})
     return
 end
 
-function h{T <: Real}(i::Integer, j::Integer, mu::Integer, n::Integer,
-                      W::Matrix{Float64}, patterns::Matrix{T})
+function h(i::Integer, j::Integer, mu::Integer, n::Integer,
+                      W::Matrix{Float64}, patterns::Matrix{<:Real})
     res = 0.0
     for k in 1:n
         if k != i && k != j
@@ -69,7 +69,7 @@ function h{T <: Real}(i::Integer, j::Integer, mu::Integer, n::Integer,
 end
 
 # Storkey learning steps w/ columns as patterns
-function storkeytrain!{T <: Real}(net::HopfieldNet, patterns::Matrix{T})
+function storkeytrain!(net::HopfieldNet, patterns::Matrix{<:Real})
     n = length(net.s)
     p = size(patterns, 2)
     for i in 1:n
