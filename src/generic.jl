@@ -6,9 +6,11 @@ function energy(net::HopfieldNet)
 end
 
 
-function settle!(net::HopfieldNet,
-                 iterations::Integer = 1_000,
-                 trace::Bool = false)
+function settle!(
+    net::HopfieldNet,
+    iterations::Integer=1_000,
+    trace::Bool=false,
+)
     for i in 1:iterations
         update!(net)
         if trace
@@ -18,10 +20,12 @@ function settle!(net::HopfieldNet,
     return
 end
 
-function associate!(net::HopfieldNet,
-                               pattern::Vector{<:Real};
-                               iterations::Integer = 1_000,
-                               trace::Bool = false)
+function associate!(
+    net::HopfieldNet,
+    pattern::Vector{<:Real};
+    iterations::Integer=1_000,
+    trace::Bool=false
+)
     copy!(net.s, pattern)
     settle!(net, iterations, trace)
     # TODO: Decide if this should really be a copy
@@ -42,7 +46,13 @@ function train!(net::HopfieldNet, patterns::Matrix{<:Real})
 end
 
 
-function h(i::Integer, j::Integer, mu::Integer, W::Matrix{Float64}, patterns::Matrix{<:Real})
+function h(
+    i::Integer,
+    j::Integer,
+    mu::Integer,
+    W::Matrix{Float64},
+    patterns::Matrix{<:Real}
+)
     idxs = setdiff(1:size(W, 1), [i, j])
     res = W[i, idxs]' * patterns[idxs, mu]
     return res
